@@ -296,7 +296,7 @@ function handleReagentTypeChange() {
   if (selected !== 'custom') {
     elements.productCode.value = selected;
   }
-  updateDefaultLot();
+  updateDefaults();
 }
 
 /**
@@ -309,14 +309,14 @@ function handleProductCodeChange() {
   } else {
     elements.reagentType.value = 'custom';
   }
-  updateDefaultLot();
+  updateDefaults();
 }
 
 /**
  * Handle manufacture date change - update lot
  */
 function handleMfgDateChange() {
-  updateDefaultLot();
+  updateDefaults();
 }
 
 // Event listeners
@@ -364,10 +364,29 @@ function generateDefaultLot() {
 }
 
 /**
- * Update lot with default value
+ * Generate default container number based on manufacture date
+ * Format: 00DD (e.g., 0004 for the 4th of the month)
  */
-function updateDefaultLot() {
+function generateDefaultContainer() {
+  const mfgDate = elements.manufactureDate.value;
+
+  let dd = '01';
+  if (mfgDate) {
+    const match = mfgDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (match) {
+      dd = match[3];
+    }
+  }
+
+  return '00' + dd;
+}
+
+/**
+ * Update lot and container with default values
+ */
+function updateDefaults() {
   elements.lot.value = generateDefaultLot();
+  elements.container.value = generateDefaultContainer();
   updateValidation();
 }
 
@@ -396,7 +415,7 @@ function setDefaultDates() {
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
   setDefaultDates();
-  updateDefaultLot();
+  updateDefaults();
   setupEventListeners();
   updateValidation();
 });
