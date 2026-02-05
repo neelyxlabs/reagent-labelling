@@ -1,0 +1,25 @@
+{
+  "name": "dxh-reagent-generator",
+  "version": "1.0.0",
+  "description": "Chrome extension for generating DxH reagent validation codes and barcodes",
+  "main": "src/validation.js",
+  "scripts": {
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage"
+  },
+  "keywords": [
+    "dxh",
+    "reagent",
+    "beckman-coulter",
+    "hibc",
+    "barcode",
+    "chrome-extension"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "jest": "^29.7.0",
+    "jest-environment-jsdom": "^29.7.0"
+  }
+}

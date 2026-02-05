@@ -1,0 +1,103 @@
+# Beckman Coulter DxH Reagent Validation Code — Summary
+
+## Problem Statement
+
+The Beckman Coulter DxH 520 hematology analyzer requires four values to register a reagent bottle: **Lot Number**, **Expiration Date**, **Container Number**, and a **Validation Code**. These values can be entered by scanning a 2D barcode on the bottle label or by manual entry. The goal was to determine whether the Validation Code could be predicted from the other three values — specifically, to reverse-engineer the algorithm that generates it.
+
+This matters because the ability to compute validation codes would allow the lab to register in-house or substitute reagents (with appropriate CLIA validation) without needing to scan a Beckman Coulter–printed barcode.
+
+---
+
+## What Was Figured Out
+
+### The Algorithm
+
+The Validation Code is the **last 5 characters of a SHA-1 hash** computed from a specific input string:
+
+```
+Validation Code = SHA-1("H628" + YYMMDD + LOT + CONTAINER)[-5:]
+```
+
+| Component | Description | Example |
+|-----------|-------------|---------|
+| `H628` | Fixed prefix — Beckman Coulter's HIBC Labeler Identification Code (without the leading `+`) | H628 |
+| `YYMMDD` | Expiration date in 2-digit year, 2-digit month, 2-digit day format | 260826 |
+| `LOT` | Lot number exactly as printed on the label | 7703835 |
+| `CONTAINER` | Container/bottle number exactly as printed on the label | 0158 |
+
+**Example:**
+- Input string: `H62826082677038350158`
+- SHA-1 digest: `...37f08`
+- Validation Code: `37f08`
+
+### The Algorithm Is Universal
+
+The same algorithm was verified across two different reagent types (Cleaner and Lyse), confirming it is **not product-specific**. The product code appears in the barcode but is excluded from the validation hash. This strongly suggests it works for all DxH 500 series reagents (Diluent, Lyse, Cleaner, etc.).
+
+### The Barcode Format
+
+The 2D barcode on reagent bottles is a **Data Matrix** code encoded in **HIBC (Health Industry Bar Code)** format:
+
+```
++H628 B3686813 YYMMDD LOT h CONTAINER(5-digit) VALIDATION
+  │       │       │     │  │      │                │
+  │       │       │     │  │      │                └─ Last 5 chars of SHA-1
+  │       │       │     │  │      └─ Container zero-padded to 5 digits
+  │       │       │     │  └─ Delimiter character
+  │       │       │     └─ Lot number as-is
+  │       │       └─ Expiration in YYMMDD
+  │       └─ Product code (varies by reagent)
+  └─ HIBC Labeler ID for Beckman Coulter
+```
+
+**Important distinction:** The barcode zero-pads the container number to 5 digits (e.g., `0158` → `00158`), but the validation hash uses the container number as-is (4 digits).
+
+---
+
+## What the Artifact Does
+
+A **React web application** (`reagent_generator.jsx`) was built that:
+
+1. Accepts five inputs: Labeler ID Code, Product Code, Expiration Date, Lot Number, and Container Number
+2. Automatically computes the SHA-1–based Validation Code in real time
+3. Assembles the full HIBC barcode data string
+4. Renders a **Data Matrix barcode** image (using bwip-js loaded from CDN)
+5. Displays a **Manual Entry Values** section showing exactly what to type into the DxH instrument
+6. Provides a **Download PNG** button for the generated barcode
+7. Provides a **Copy** button for the raw barcode data string
+
+Default values are pre-populated for DxH 500 Series Cleaner reagent but can be adjusted for any reagent type by changing the Product Code field.
+
+A companion **Python script** (`beckman_validation.py`) was also produced for command-line validation code generation.
+
+---
+
+## Observations for Future Thinking
+
+### 1. The Instrument Validates Offline
+The DxH 520 is not connected to the internet, which confirmed early on that the algorithm must be deterministic and embedded in firmware. This ruled out server-side lookups and random components, significantly narrowing the search space.
+
+### 2. The Barcode Was the Key Breakthrough
+Initial attempts using only the four visible label values (Lot, Expiration, Container, Validation) failed across thousands of hash/checksum combinations. Decoding the Data Matrix barcode revealed the **hidden prefix `H628`** — Beckman Coulter's HIBC Labeler ID — which is part of the hash input but is not one of the four manually entered fields. Without this, the algorithm could not have been discovered from the label values alone.
+
+### 3. The Product Code Is Excluded from the Hash
+Despite appearing in the barcode, the product code (`B3686813`) is **not** included in the validation calculation. Only `H628` (the company-level identifier) participates. This is what makes the algorithm universal across reagent types.
+
+### 4. Container Number Formatting Matters
+The barcode stores the container number zero-padded to 5 digits, but the validation hash uses the original representation (typically 4 digits). Getting this wrong would produce incorrect validation codes.
+
+### 5. Five Samples Were Sufficient
+The algorithm was cracked with only 5 data points. The key was having high-quality structured data (all four fields per bottle) plus the barcode decode. More samples would have been needed if the barcode had not been available.
+
+### 6. HIBC Is Common in IVD
+Beckman Coulter uses the HIBC standard, which is widespread in the in-vitro diagnostics industry. Other IVD manufacturers (Siemens, Abbott, Roche, Sysmex) may use similar HIBC-based validation schemes. The methodology used here — decode the barcode, identify the HIBC structure, then brute-force the hash — could potentially be applied to other instrument platforms.
+
+### 7. SHA-1 Truncation as an Integrity Check
+Using the last 5 hex characters of SHA-1 provides 20 bits of entropy (~1 in 1 million chance of a random match). This is designed as a **data entry integrity check** (catching typos), not a cryptographic security measure. It is not intended to prevent deliberate code generation.
+
+### 8. Potential Reagent Applications
+This capability enables several potential use cases:
+- Registering in-house formulated reagents with proper CLIA validation
+- Extending expiration dates for stability-validated reagents
+- Generating replacement labels for damaged bottles
+- Creating barcodes for reagents received without intact labels

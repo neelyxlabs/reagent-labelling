@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DxH Reagent Generator</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Label Generator</h1>
+      <p class="subtitle">Generates labeling for DxH-compatible reagents</p>
+    </header>
+
+    <div class="main-grid">
+      <div class="column-left">
+        <section class="card">
+          <h2>Input Parameters</h2>
+          <div class="form-stack">
+            <div class="form-group">
+              <label for="labelerId">Labeler ID Code</label>
+              <input type="text" id="labelerId" value="+H628" placeholder="+H628">
+              <span class="hint">HIBC Labeler ID (e.g., +H628)</span>
+            </div>
+
+            <div class="form-row-2col">
+              <div class="form-group">
+                <label for="reagentType">Reagent Type</label>
+                <select id="reagentType">
+                  <option value="B3686813">Cleaner</option>
+                  <option value="B3684613">Lyse</option>
+                  <option value="B3684513">Diluent</option>
+                  <option value="custom">Custom</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="productCode">Product Code</label>
+                <input type="text" id="productCode" value="B3686813" placeholder="B3686813">
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="manufactureDate">Manufacture Date</label>
+              <input type="date" id="manufactureDate">
+            </div>
+
+            <div class="form-group">
+              <label for="expirationDate">Expiration Date</label>
+              <input type="date" id="expirationDate">
+            </div>
+
+            <div class="form-group">
+              <label for="lot">Lot Number</label>
+              <input type="text" id="lot" value="7703835" placeholder="7703835" maxlength="7">
+              <span id="lotHint" class="hint">Must be 7 digits</span>
+            </div>
+
+            <div class="form-group">
+              <label for="container">Container Number</label>
+              <input type="text" id="container" value="0001" placeholder="0001">
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="column-right">
+        <section class="card">
+          <h2>Validation Barcode</h2>
+          <div id="error" class="error" style="display: none;"></div>
+          <div class="barcode-layout">
+            <div class="barcode-left">
+              <div class="barcode-frame">
+                <canvas id="barcodeCanvas"></canvas>
+              </div>
+            </div>
+            <div class="barcode-right">
+              <div class="udi-breakdown">
+                <div class="udi-row"><span class="udi-label">Lot:</span> <span id="manualLot">—</span></div>
+                <div class="udi-row"><span class="udi-label">Exp:</span> <span id="manualExpiration">—</span></div>
+                <div class="udi-row"><span class="udi-label">Container:</span> <span id="manualContainer">—</span></div>
+                <div class="udi-row highlight"><span class="udi-label">Validation:</span> <span id="manualValidation">—</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="barcode-data-row">
+            <code id="barcodeData">—</code>
+            <button id="copyBtn" class="btn-secondary" disabled>Copy</button>
+          </div>
+        </section>
+
+        <section class="card">
+          <h2>UDI</h2>
+          <div id="udiError" class="error" style="display: none;"></div>
+          <div class="barcode-layout">
+            <div class="barcode-left">
+              <div class="barcode-frame">
+                <canvas id="udiBarcodeCanvas"></canvas>
+              </div>
+            </div>
+            <div class="barcode-right">
+              <div class="udi-breakdown udi-compact">
+                <div class="udi-row"><span class="udi-label">(01)</span> <span id="udiGtin">—</span></div>
+                <div class="udi-row"><span class="udi-label">(11)</span> <span id="udiMfgDate">—</span></div>
+                <div class="udi-row"><span class="udi-label">(17)</span> <span id="udiExpDate">—</span></div>
+                <div class="udi-row"><span class="udi-label">(10)</span> <span id="udiLot">—</span></div>
+              </div>
+              <div class="fda-symbols fda-compact">
+                <div class="fda-row"><img src="https://upload.wikimedia.org/wikipedia/commons/b/be/Date_of_manufacture.svg" alt="MFG" class="fda-symbol"><span id="fdaMfgDate">—</span></div>
+                <div class="fda-row"><img src="https://upload.wikimedia.org/wikipedia/commons/b/b3/Use-by-date.svg" alt="EXP" class="fda-symbol"><span id="fdaExpDate">—</span></div>
+                <div class="fda-row"><span class="lot-symbol">LOT</span><span id="fdaLot">—</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="barcode-data-row">
+            <code id="udiData">—</code>
+            <button id="copyUdiBtn" class="btn-secondary" disabled>Copy</button>
+          </div>
+        </section>
+      </div>
+    </div>
+  </div>
+
+  <script src="lib/bwip-js.min.js"></script>
+  <script src="src/validation.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
