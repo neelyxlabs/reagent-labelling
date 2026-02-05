@@ -57,7 +57,7 @@ npm test
    - **Product Code**: Auto-filled based on reagent type (or enter custom)
    - **Manufacture Date**: Defaults to today
    - **Expiration Date**: Defaults to 1 year from manufacture date
-   - **Lot Number**: 7-digit lot number from reagent label
+   - **Lot Number**: 7-character lot (auto-generated as PREFIX+MMYY, e.g., CLN0225)
    - **Container Number**: Container/bottle number from label
 4. Two barcodes are generated automatically:
    - **Validation Barcode**: Data Matrix for instrument registration
