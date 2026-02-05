@@ -2,6 +2,8 @@
 
 Chrome extension for generating validation codes, Data Matrix barcodes, and UDI labels for hematology analyzer reagents. Currently supports Beckman Coulter DxH 500 series reagents.
 
+![Screenshot](screenshot.png)
+
 ## Features
 
 - Generate validation codes for reagent registration
