@@ -50,6 +50,13 @@ const PRODUCT_GTINS = {
   'B3684513': '15099590671853'   // Diluent
 };
 
+// Lot number prefixes by product code
+const LOT_PREFIXES = {
+  'B3686813': 'CLN',  // Cleaner
+  'B3684613': 'LYS',  // Lyse
+  'B3684513': 'DIL'   // Diluent
+};
+
 /**
  * Generate UDI string in GS1 format
  * Format: (01)GTIN(11)ManufactureYYMMDD(17)ExpirationYYMMDD(10)Lot
@@ -116,13 +123,13 @@ async function updateValidation() {
     container: elements.container.value.trim()
   };
 
-  // Validate lot number (must be 7 digits)
-  const lotValid = /^\d{7}$/.test(params.lot);
+  // Validate lot number (must be 7 characters)
+  const lotValid = params.lot.length === 7;
   if (params.lot && !lotValid) {
-    elements.lotHint.textContent = `Must be 7 digits (currently ${params.lot.length})`;
+    elements.lotHint.textContent = `Must be 7 characters (currently ${params.lot.length})`;
     elements.lotHint.classList.add('error-hint');
   } else {
-    elements.lotHint.textContent = 'Must be 7 digits';
+    elements.lotHint.textContent = 'Must be 7 characters';
     elements.lotHint.classList.remove('error-hint');
   }
 
@@ -275,18 +282,18 @@ async function copyUdiData() {
 }
 
 /**
- * Handle reagent type dropdown change - update product code field
+ * Handle reagent type dropdown change - update product code field and lot
  */
 function handleReagentTypeChange() {
   const selected = elements.reagentType.value;
   if (selected !== 'custom') {
     elements.productCode.value = selected;
   }
-  updateValidation();
+  updateDefaults();
 }
 
 /**
- * Handle product code input change - sync reagent type dropdown
+ * Handle product code input change - sync reagent type dropdown and lot
  */
 function handleProductCodeChange() {
   const code = elements.productCode.value.trim();
@@ -318,6 +325,16 @@ function setupEventListeners() {
 }
 
 /**
+ * Format date as YYYY-MM-DD using local timezone
+ */
+function formatLocalDate(date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+/**
  * Set default dates: manufacture = today, expiration = 1 year from today
  */
 function setDefaultDates() {
@@ -325,8 +342,8 @@ function setDefaultDates() {
   const oneYearLater = new Date(today);
   oneYearLater.setFullYear(today.getFullYear() + 1);
 
-  elements.manufactureDate.value = today.toISOString().split('T')[0];
-  elements.expirationDate.value = oneYearLater.toISOString().split('T')[0];
+  elements.manufactureDate.value = formatLocalDate(today);
+  elements.expirationDate.value = formatLocalDate(oneYearLater);
 }
 
 // Initialize
