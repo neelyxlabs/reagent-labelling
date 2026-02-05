@@ -26,7 +26,7 @@ Chrome extension for generating validation codes, Data Matrix barcodes, and UDI 
 
 1. Download this repository (Code → Download ZIP) or clone it:
    ```bash
-   git clone https://github.com/neelyxlabs/reagent-labelling.git
+   git clone https://github.com/neelyxlabs/reagent-labeling.git
    ```
 
 2. Unzip if downloaded as ZIP
@@ -37,7 +37,7 @@ Chrome extension for generating validation codes, Data Matrix barcodes, and UDI 
 
 5. Click **Load unpacked**
 
-6. Select the `reagent-labelling` folder
+6. Select the `reagent-labeling` folder
 
 7. The extension icon will appear in your Chrome toolbar
 
@@ -90,7 +90,7 @@ The UDI follows GS1 format:
 ## Project Structure
 
 ```
-reagent-labelling/
+reagent-labeling/
 ├── manifest.json          # Chrome extension manifest (v3)
 ├── popup-launcher.html    # Extension popup (opens app)
 ├── popup-launcher.js      # Launcher logic
