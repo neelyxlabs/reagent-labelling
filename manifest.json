@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "DxH Reagent Generator",
+  "name": "Reagent Label Generator",
   "version": "1.0.0",
-  "description": "Generate validation codes and Data Matrix barcodes for DxH reagents",
+  "description": "Generate validation codes, Data Matrix barcodes, and UDI labels for hematology analyzer reagents",
   "permissions": ["clipboardWrite", "tabs"],
   "action": {
     "default_popup": "popup-launcher.html",

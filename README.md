@@ -1,6 +1,6 @@
-# DxH Label Generator
+# Reagent Label Generator
 
-Chrome extension for generating validation codes, Data Matrix barcodes, and UDI labels for Beckman Coulter DxH 500 series reagents.
+Chrome extension for generating validation codes, Data Matrix barcodes, and UDI labels for hematology analyzer reagents. Currently supports Beckman Coulter DxH 500 series reagents.
 
 ## Features
 
