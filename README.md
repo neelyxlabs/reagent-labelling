@@ -111,7 +111,3 @@ reagent-labelling/
 ```bash
 npm test
 ```
-
-## License
-
-MIT
