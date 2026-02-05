@@ -4,9 +4,10 @@ Chrome extension for generating validation codes, Data Matrix barcodes, and UDI 
 
 ## Features
 
-- Generate SHA-1 based validation codes for reagent registration
+- Generate validation codes for reagent registration
 - Create HIBC-compliant Data Matrix barcodes
-- Generate UDI (Unique Device Identifier) in GS1 format with FDA-compliant symbols
+- Generate UDI (Unique Device Identifier) in GS1 format
+- Display FDA-compliant ISO 15223-1 symbols (manufacturing date, expiration, lot)
 - Support for Cleaner, Lyse, and Diluent reagent types
 - Copy barcode/UDI data to clipboard
 - Print-friendly layout (hides input parameters when printing)
@@ -19,32 +20,26 @@ Chrome extension for generating validation codes, Data Matrix barcodes, and UDI 
 | Lyse | B3684613 | 15099590671860 |
 | Diluent | B3684513 | 15099590671853 |
 
-## Algorithm
-
-The validation code is computed as:
-
-```
-Validation Code = SHA-1("H628" + YYMMDD + LOT + CONTAINER)[-5:]
-```
-
-| Component | Description | Example |
-|-----------|-------------|---------|
-| `H628` | Beckman Coulter's HIBC Labeler ID (without leading `+`) | H628 |
-| `YYMMDD` | Expiration date (2-digit year, month, day) | 260826 |
-| `LOT` | Lot number as printed on label | 7703835 |
-| `CONTAINER` | Container number as printed on label | 0158 |
-
-For the full reverse-engineering story, see [claude_observations.txt](claude_observations.txt).
-
 ## Installation
 
-### As Chrome Extension
+### Chrome Extension
 
-1. Clone this repository
-2. Open Chrome and navigate to `chrome://extensions/`
-3. Enable "Developer mode" (toggle in top right)
-4. Click "Load unpacked"
-5. Select the `dxh-reagent` directory
+1. Download this repository (Code → Download ZIP) or clone it:
+   ```bash
+   git clone https://github.com/neelyxlabs/reagent-labelling.git
+   ```
+
+2. Unzip if downloaded as ZIP
+
+3. Open Chrome and go to `chrome://extensions/`
+
+4. Enable **Developer mode** (toggle in the top right corner)
+
+5. Click **Load unpacked**
+
+6. Select the `reagent-labelling` folder
+
+7. The extension icon will appear in your Chrome toolbar
 
 ### Development Setup
 
@@ -53,73 +48,70 @@ npm install
 npm test
 ```
 
+## Usage
+
+1. Click the extension icon in Chrome toolbar
+2. Click **Open App** to launch the full interface in a new tab
+3. Enter reagent parameters:
+   - **Reagent Type**: Select Cleaner, Lyse, Diluent, or Custom
+   - **Product Code**: Auto-filled based on reagent type (or enter custom)
+   - **Manufacture Date**: Defaults to today
+   - **Expiration Date**: Defaults to 1 year from manufacture date
+   - **Lot Number**: 7-digit lot number from reagent label
+   - **Container Number**: Container/bottle number from label
+4. Two barcodes are generated automatically:
+   - **Validation Barcode**: Data Matrix for instrument registration
+   - **UDI**: GS1 format barcode with ISO 15223-1 symbols
+5. Click **Copy** to copy barcode data to clipboard
+6. Use browser print (Ctrl/Cmd+P) for label output
+
+## How Labels Are Generated
+
+### Validation Barcode
+
+The validation code is computed using SHA-1:
+
+```
+Validation Code = SHA-1("H628" + YYMMDD + LOT + CONTAINER)[-5:]
+```
+
+The full barcode follows HIBC format:
+```
++H628[ProductCode][YYMMDD][Lot]h[Container-5digit][ValidationCode]
+```
+
+### UDI Barcode
+
+The UDI follows GS1 format:
+```
+01[GTIN]11[MfgYYMMDD]17[ExpYYMMDD]10[Lot]
+```
+
 ## Project Structure
 
 ```
-dxh-reagent/
+reagent-labelling/
 ├── manifest.json          # Chrome extension manifest (v3)
-├── popup-launcher.html    # Extension popup (opens app in new tab)
+├── popup-launcher.html    # Extension popup (opens app)
 ├── popup-launcher.js      # Launcher logic
 ├── popup.html             # Main application UI
-├── popup.js               # UI logic and UDI generation
-├── styles.css             # Styling (includes print styles)
+├── popup.js               # UI logic and barcode generation
+├── styles.css             # Styling
 ├── src/
-│   └── validation.js      # Core validation algorithm (testable)
+│   └── validation.js      # Core validation algorithm
 ├── lib/
-│   └── bwip-js.min.js     # Barcode generation library
+│   └── bwip-js.min.js     # Barcode rendering library
 ├── icons/                 # Extension icons
 └── tests/
-    ├── validation.test.js # Unit tests (31 tests)
-    └── setup.js           # Jest test setup
+    └── validation.test.js # Unit tests
 ```
 
 ## Testing
-
-Run the test suite:
 
 ```bash
 npm test
 ```
 
-Run tests in watch mode:
+## License
 
-```bash
-npm run test:watch
-```
-
-## Usage
-
-1. Click the extension icon in Chrome
-2. Click "Open App" to launch the full interface in a new tab
-3. Enter reagent parameters:
-   - Select Reagent Type (Cleaner, Lyse, Diluent, or Custom)
-   - Manufacture Date (defaults to today)
-   - Expiration Date (defaults to 1 year from manufacture)
-   - Lot Number (7 digits)
-   - Container Number
-4. Two barcodes are generated:
-   - **Validation Barcode**: For DxH instrument registration
-   - **UDI**: GS1 format with ISO 15223-1 compliant symbols for labeling
-5. Use Copy buttons to copy barcode data
-6. Print the page for label output (input parameters are hidden)
-
-## Barcode Formats
-
-### Validation Barcode (HIBC)
-
-```
-+H628 B3686813 YYMMDD LOT h CONTAINER(5-digit) VALIDATION
-```
-
-Note: Container is zero-padded to 5 digits in the barcode but used as-is in the validation hash.
-
-### UDI (GS1)
-
-```
-01[GTIN]11[MfgYYMMDD]17[ExpYYMMDD]10[Lot]
-```
-
-The UDI section displays FDA-required symbols per ISO 15223-1:
-- Manufacturing date symbol
-- Use-by/expiration date symbol (hourglass)
-- Batch/LOT symbol
+MIT
