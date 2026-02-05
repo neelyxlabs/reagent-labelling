@@ -1,37 +1,9 @@
 /**
- * DxH Reagent Generator - Chrome Extension Popup
+ * Reagent Label Generator - Chrome Extension Popup
  */
 
-// DOM Elements
-const elements = {
-  labelerId: document.getElementById('labelerId'),
-  reagentType: document.getElementById('reagentType'),
-  productCode: document.getElementById('productCode'),
-  manufactureDate: document.getElementById('manufactureDate'),
-  expirationDate: document.getElementById('expirationDate'),
-  lot: document.getElementById('lot'),
-  container: document.getElementById('container'),
-  barcodeData: document.getElementById('barcodeData'),
-  udiData: document.getElementById('udiData'),
-  udiGtin: document.getElementById('udiGtin'),
-  udiMfgDate: document.getElementById('udiMfgDate'),
-  udiExpDate: document.getElementById('udiExpDate'),
-  udiLot: document.getElementById('udiLot'),
-  fdaMfgDate: document.getElementById('fdaMfgDate'),
-  fdaExpDate: document.getElementById('fdaExpDate'),
-  fdaLot: document.getElementById('fdaLot'),
-  copyBtn: document.getElementById('copyBtn'),
-  copyUdiBtn: document.getElementById('copyUdiBtn'),
-  barcodeCanvas: document.getElementById('barcodeCanvas'),
-  udiBarcodeCanvas: document.getElementById('udiBarcodeCanvas'),
-  error: document.getElementById('error'),
-  udiError: document.getElementById('udiError'),
-  manualLot: document.getElementById('manualLot'),
-  manualExpiration: document.getElementById('manualExpiration'),
-  manualContainer: document.getElementById('manualContainer'),
-  manualValidation: document.getElementById('manualValidation'),
-  lotHint: document.getElementById('lotHint')
-};
+// DOM Elements (initialized after DOM loads)
+let elements = {};
 
 // State
 let currentBarcodeData = '';
@@ -48,13 +20,6 @@ const PRODUCT_GTINS = {
   'B3686813': '15099590671877',  // Cleaner
   'B3684613': '15099590671860',  // Lyse
   'B3684513': '15099590671853'   // Diluent
-};
-
-// Lot number prefixes by product code
-const LOT_PREFIXES = {
-  'B3686813': 'CLN',  // Cleaner
-  'B3684613': 'LYS',  // Lyse
-  'B3684513': 'DIL'   // Diluent
 };
 
 // Lot number prefixes by product code
@@ -316,6 +281,14 @@ function handleProductCodeChange() {
  * Handle manufacture date change - update lot
  */
 function handleMfgDateChange() {
+  // Update expiration date to 1 year after manufacture date
+  const mfgDate = elements.manufactureDate.value;
+  if (mfgDate) {
+    const mfg = new Date(mfgDate);
+    const exp = new Date(mfg);
+    exp.setFullYear(mfg.getFullYear() + 1);
+    elements.expirationDate.value = formatLocalDate(exp);
+  }
   updateDefaults();
 }
 
@@ -412,8 +385,44 @@ function setDefaultDates() {
   elements.expirationDate.value = formatLocalDate(oneYearLater);
 }
 
+/**
+ * Initialize DOM element references
+ */
+function initElements() {
+  elements = {
+    labelerId: document.getElementById('labelerId'),
+    reagentType: document.getElementById('reagentType'),
+    productCode: document.getElementById('productCode'),
+    manufactureDate: document.getElementById('manufactureDate'),
+    expirationDate: document.getElementById('expirationDate'),
+    lot: document.getElementById('lot'),
+    container: document.getElementById('container'),
+    barcodeData: document.getElementById('barcodeData'),
+    udiData: document.getElementById('udiData'),
+    udiGtin: document.getElementById('udiGtin'),
+    udiMfgDate: document.getElementById('udiMfgDate'),
+    udiExpDate: document.getElementById('udiExpDate'),
+    udiLot: document.getElementById('udiLot'),
+    fdaMfgDate: document.getElementById('fdaMfgDate'),
+    fdaExpDate: document.getElementById('fdaExpDate'),
+    fdaLot: document.getElementById('fdaLot'),
+    copyBtn: document.getElementById('copyBtn'),
+    copyUdiBtn: document.getElementById('copyUdiBtn'),
+    barcodeCanvas: document.getElementById('barcodeCanvas'),
+    udiBarcodeCanvas: document.getElementById('udiBarcodeCanvas'),
+    error: document.getElementById('error'),
+    udiError: document.getElementById('udiError'),
+    manualLot: document.getElementById('manualLot'),
+    manualExpiration: document.getElementById('manualExpiration'),
+    manualContainer: document.getElementById('manualContainer'),
+    manualValidation: document.getElementById('manualValidation'),
+    lotHint: document.getElementById('lotHint')
+  };
+}
+
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
+  initElements();
   setDefaultDates();
   updateDefaults();
   setupEventListeners();
