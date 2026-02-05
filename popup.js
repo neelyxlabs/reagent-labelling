@@ -57,6 +57,13 @@ const LOT_PREFIXES = {
   'B3684513': 'DIL'   // Diluent
 };
 
+// Lot number prefixes by product code
+const LOT_PREFIXES = {
+  'B3686813': 'CLN',  // Cleaner
+  'B3684613': 'LYS',  // Lyse
+  'B3684513': 'DIL'   // Diluent
+};
+
 /**
  * Generate UDI string in GS1 format
  * Format: (01)GTIN(11)ManufactureYYMMDD(17)ExpirationYYMMDD(10)Lot
@@ -289,7 +296,7 @@ function handleReagentTypeChange() {
   if (selected !== 'custom') {
     elements.productCode.value = selected;
   }
-  updateDefaults();
+  updateDefaultLot();
 }
 
 /**
@@ -302,16 +309,26 @@ function handleProductCodeChange() {
   } else {
     elements.reagentType.value = 'custom';
   }
-  updateValidation();
+  updateDefaultLot();
+}
+
+/**
+ * Handle manufacture date change - update lot
+ */
+function handleMfgDateChange() {
+  updateDefaultLot();
 }
 
 // Event listeners
 function setupEventListeners() {
-  // Input change handlers (except productCode which has special handling)
-  const inputs = ['labelerId', 'manufactureDate', 'expirationDate', 'lot', 'container'];
+  // Input change handlers
+  const inputs = ['labelerId', 'expirationDate', 'lot', 'container'];
   inputs.forEach(id => {
     elements[id].addEventListener('input', updateValidation);
   });
+
+  // Manufacture date updates lot number
+  elements.manufactureDate.addEventListener('input', handleMfgDateChange);
 
   // Product code has bidirectional sync with reagent type
   elements.productCode.addEventListener('input', handleProductCodeChange);
@@ -322,6 +339,36 @@ function setupEventListeners() {
   // Button handlers
   elements.copyBtn.addEventListener('click', copyBarcodeData);
   elements.copyUdiBtn.addEventListener('click', copyUdiData);
+}
+
+/**
+ * Generate default lot number based on reagent type and manufacture date
+ * Format: PREFIX + MMYY (e.g., CLN0225 for Cleaner, Feb 2025)
+ */
+function generateDefaultLot() {
+  const productCode = elements.productCode.value.trim();
+  const mfgDate = elements.manufactureDate.value;
+
+  const prefix = LOT_PREFIXES[productCode] || 'CUS';
+
+  let mmyy = '0000';
+  if (mfgDate) {
+    const match = mfgDate.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+    if (match) {
+      const [, year, month] = match;
+      mmyy = month + year.slice(2);
+    }
+  }
+
+  return prefix + mmyy;
+}
+
+/**
+ * Update lot with default value
+ */
+function updateDefaultLot() {
+  elements.lot.value = generateDefaultLot();
+  updateValidation();
 }
 
 /**
@@ -349,6 +396,7 @@ function setDefaultDates() {
 // Initialize
 document.addEventListener('DOMContentLoaded', () => {
   setDefaultDates();
+  updateDefaultLot();
   setupEventListeners();
   updateValidation();
 });
